@@ -49,11 +49,24 @@ const Filter = ({nameFilter, handleNameFilterChange}) => {
   )
 }
 
+const Notification = ({notification}) => {
+  if (notification === undefined) {
+    return null
+  }
+
+  return (
+    <div className={notification.type}>
+      {notification.text}
+    </div>
+  )
+}
+
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [nameFilter, setNameFilter] = useState('')
+  const [notification, setNotification] = useState(undefined);
 
   useEffect(() => {
     personService
@@ -78,6 +91,12 @@ const App = () => {
             setPersons(persons.map(person => person.id !== updateId ? person : returnedPerson))
             setNewName('')
             setNewNumber('')
+            setNotification({text: `Number updated for ${newName}`, type: 'success'})
+            setTimeout(() => setNotification(undefined), 2000)
+          })
+          .catch(error => {
+            setNotification({text: `Information of ${newName} has already been removed from server`, type: 'error'})
+            setTimeout(() => setNotification(undefined), 2000)
           })
       }
       return
@@ -94,6 +113,8 @@ const App = () => {
         setPersons(persons.concat(response.data))
         setNewName('')
         setNewNumber('')
+        setNotification({text: `Added ${newName}`, type: 'success'})
+        setTimeout(() => setNotification(undefined), 2000)
       })
       .catch(error => console.error(error))
   }
@@ -103,7 +124,11 @@ const App = () => {
       personService
         .remove(id)
         .then(() => personService.getAll())
-        .then(response => setPersons(response.data))
+        .then(response => {
+          setPersons(response.data)
+          setNotification({text: `Deleted ${name}`, type: 'success'})
+          setTimeout(() => setNotification(undefined), 2000)
+        })
         .catch(error => console.error(error))
     }
   }
@@ -127,6 +152,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification notification={notification}></Notification>
       <Filter 
         nameFilter={nameFilter} 
         handleNameFilterChange={handleNameFilterChange}>
