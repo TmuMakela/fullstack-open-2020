@@ -88,6 +88,12 @@ const App = () => {
           .update(updateId, updatedPerson)
           .then(response => response.data)
           .then(returnedPerson => {
+            if (!returnedPerson) {
+              setNotification({text: `Information of ${newName} has already been removed from server`, type: 'error'})
+              setTimeout(() => setNotification(undefined), 2000)
+              personService.getAll().then(response => setPersons(response.data))
+              return
+            }
             setPersons(persons.map(person => person.id !== updateId ? person : returnedPerson))
             setNewName('')
             setNewNumber('')
@@ -95,7 +101,9 @@ const App = () => {
             setTimeout(() => setNotification(undefined), 2000)
           })
           .catch(error => {
-            setNotification({text: `Information of ${newName} has already been removed from server`, type: 'error'})
+            const msg = error.response.data.error
+            console.log(msg)
+            setNotification({text: "Person validation failed: " + msg, type: 'error'})
             setTimeout(() => setNotification(undefined), 2000)
           })
       }
@@ -116,7 +124,12 @@ const App = () => {
         setNotification({text: `Added ${newName}`, type: 'success'})
         setTimeout(() => setNotification(undefined), 2000)
       })
-      .catch(error => console.error(error))
+      .catch(error => {
+        const msg = error.response.data.error
+        console.log(msg)
+        setNotification({text: "Person validation failed: " + msg, type: 'error'})
+        setTimeout(() => setNotification(undefined), 2000)
+      })
   }
 
   const removePerson = (id, name) => {
