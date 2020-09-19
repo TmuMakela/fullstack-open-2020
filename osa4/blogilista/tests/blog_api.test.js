@@ -80,6 +80,30 @@ describe('post request', () => {
   })
 })
 
+describe('put request', () => {
+  test('number of likes are updated', async () => {
+    const blogs = await helper.blogsInDb()
+    const updated = blogs[0]
+    updated['likes'] = 123
+
+    const response = await api
+      .put(`/api/blogs/${updated.id}`)
+      .send(updated)
+
+    expect(response.body).toEqual(updated)
+  })
+})
+
+describe('delete request', () => {
+  test('correct number of blogs after one is deleted', async () => {
+    const blogs = await helper.blogsInDb()
+    const deleteBlog = blogs[0]
+    
+    await api.delete(`/api/blogs/${deleteBlog.id}`).expect(204)
+    expect((await helper.blogsInDb()).length).toBe(helper.initialBlogs.length -1)
+  })
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
